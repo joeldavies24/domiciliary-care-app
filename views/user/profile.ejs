@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopefield Homecare</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('partials/navbar', { user: user }) %>
+
+    <div class="grid">
+        <div class="content_section">
+            <div class="profile-card">
+
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <h2 style="margin:0;"><%= user.username %></h2>
+                </div>
+
+                <hr>
+
+                <div class="profile-section">
+                    <h3>Personal Details</h3>
+
+                    <div class="profile-details">
+                        <% if (user.userType === 'client') { %>
+                            <p><strong>NHS Number:</strong> <span><%= user.nhsNumber || 'Not Set' %></span></p>
+                        <% } %>
+
+                        <p><strong>Full Name:</strong> <span><%= user.userForename %> <%= user.userSurname %></span></p>
+
+                        <p><strong>Date of Birth:</strong> 
+                            <span>
+                                <%= user.userDOB ? new Date(user.userDOB).toLocaleDateString('en-GB') : "Not Set" %>
+                            </span>
+                        </p>
+
+                        <p><strong>Phone Number:</strong> 
+                            <span><%= user.phoneNumber || 'Not Set' %></span>
+                        </p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="profile-section">
+                    <h4>Address</h4>
+
+                    <div class="profile-details">
+                        <p>
+                            <%= user.userAddress?.street || '' %><br>
+                            <%= user.userAddress?.town || '' %><br>
+                            <% if (user.userAddress?.county) { %>
+                                <%= user.userAddress.county %><br>
+                            <% } %>
+                            <%= user.userAddress?.postcode || '' %><br>
+                            <% if (user.userAddress?.country) { %>
+                                <%= user.userAddress.country %><br>
+                            <% } %>
+                        </p>
+                    </div>
+                </div>
+
+                <% if (user.userType === 'client' && carePlan) { %>
+                    <hr>
+
+                    <div class="profile-section">
+                        <h4>Care Plan</h4>
+                        <p style="color:#666;">Access your care plan details and medical information.</p>
+                    </div>
+                <% } %>
+
+                <div class="profile-actions" style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
+                    <a href="/user/profile/edit" class="button-link">Edit Profile</a>
+                    <a href="/user/index" class="button-link">Back to user dashboard</a>
+
+                    <% if (user.userType === 'client' && carePlan) { %>
+                        <a href="/user/careplan/details/<%= carePlan._id %>" class="button-link">
+                            View Care Plan
+                        </a>
+                    <% } %>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <%- include('partials/footer')%>
+</body>
+</html>

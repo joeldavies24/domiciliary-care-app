@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopefield Homecare</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<%- include('partials/navbar', { user: user }) %>
+
+<div class="grid">
+    <div class="content_section">
+        <div class="profile-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <h2>Visit Information</h2>
+                <% if (visit.checkIn && !visit.checkOut) { %>
+                    <span class="status-badge">
+                        In Progress
+                    </span>
+                <% } else if (visit.checkOut) { %>
+                    <span class="status-badge">
+                        Completed
+                    </span>
+                <% } else { %>
+                    <span class="status-badge">
+                        Scheduled
+                    </span>
+                <% } %>
+            </div>
+            <hr>
+            <div class="profile-details">
+                <p>
+                    <strong>Date:</strong>
+                    <%= new Date(visit.date).toLocaleDateString('en-GB') %>
+                </p>
+                <p>
+                    <strong>Client:</strong>
+                    <a href="/user/details/<%= visit.clientId._id %>" class="text-link">
+                        <%= visit.clientId.userForename %> <%= visit.clientId.userSurname %>
+                    </a>
+                </p>
+                <p>
+                    <strong>Carer(s):</strong>
+                    <% visit.carerId.forEach(function(carer, index){ %>
+
+                        <% if (user.userType !== 'client') { %>
+                            <a href="/user/details/<%= carer._id %>" class="text-link">
+                                <%= carer.userForename %> <%= carer.userSurname %>
+                            </a>
+                        <% } else { %>
+                            <span>
+                                <%= carer.userForename %> <%= carer.userSurname %>
+                            </span>
+                        <% } %>
+
+                        <% if(index < visit.carerId.length - 1){ %>
+                            ,
+                        <% } %>
+
+                    <% }) %>
+                </p>
+                <div class="card-sub-section" style="background:#f8f9fa;padding:18px;border-radius:10px;margin:20px 0;">
+                    <h4 style="margin-top:0;">
+                        Client Address
+                    </h4>
+                    <hr>
+                    <% if (visit.clientId.userAddress) { %>
+                        <% if (visit.clientId.userAddress.street) { %>
+                            <%= visit.clientId.userAddress.street %><br>
+                        <% } %>
+                        <% if (visit.clientId.userAddress.town) { %>
+                            <%= visit.clientId.userAddress.town %><br>
+                        <% } %>
+                        <% if (visit.clientId.userAddress.county) { %>
+                            <%= visit.clientId.userAddress.county %><br>
+                        <% } %>
+                        <% if (visit.clientId.userAddress.postcode) { %>
+                            <strong>
+                                <%= visit.clientId.userAddress.postcode %>
+                            </strong><br>
+                        <% } %>
+                        <% if (visit.clientId.userAddress.country) { %>
+                            <%= visit.clientId.userAddress.country %>
+                        <% } %>
+                    <% } %>
+                </div>
+                <p>
+                    <strong>Scheduled Time:</strong>
+                    <%= visit.scheduledStart %>
+                    -
+                    <%= visit.scheduledEnd %>
+                </p>
+                <% if (visit.checkIn) { %>
+                    <p>
+                        <strong>Check-in:</strong>
+                        <%= new Date(visit.checkIn)
+                            .toLocaleTimeString('en-GB') %>
+                    </p>
+                <% } %>
+                <% if (visit.checkOut) { %>
+                    <p>
+                        <strong>Check-out:</strong>
+                        <%= new Date(visit.checkOut)
+                            .toLocaleTimeString('en-GB') %>
+                    </p>
+                <% } %>
+                <% if (visit.clientFeeling) { %>
+                    <p>
+                        <strong>Client Wellbeing:</strong>
+                        <% if(visit.clientFeeling === "great"){ %>
+                            😊 Great
+                        <% } %>
+                        <% if(visit.clientFeeling === "good"){ %>
+                            🙂 Good
+                        <% } %>
+                        <% if(visit.clientFeeling === "okay"){ %>
+                            😐 Okay
+                        <% } %>
+                        <% if(visit.clientFeeling === "sad"){ %>
+                            😟 Sad
+                        <% } %>
+                        <% if(visit.clientFeeling === "bad"){ %>
+                            😢 Bad
+                        <% } %>
+                    </p>
+                <% } %>
+                <% if (visit.visitNotes) { %>
+                    <div style="margin-top:20px;">
+                        <strong>Visit Notes</strong>
+                        <div class="card-sub-section" style="margin-top:10px;background:#f8f9fa;padding:15px;border-radius:8px;">
+                            <%= visit.visitNotes %>
+                        </div>
+                    </div>
+                <% } %>
+
+                <% if (visit.tasks && visit.tasks.length > 0) { %>
+                    <div style="margin-top:25px;">
+                        <strong>Tasks</strong>
+                        <div style="margin-top:10px;">
+                            <% visit.tasks.forEach(function(item){ %>
+                                <div class="card-sub-section" style="padding:12px;margin-bottom:10px;background:#f8f9fa;border-radius:8px;">
+                                    <% if(item.task) { %>
+                                        <strong>
+                                            <%= item.task.taskName %>
+                                        </strong>
+
+                                        <% if(item.completed){ %>
+                                            <span>
+                                                Completed
+                                            </span>
+                                        <% } else { %>
+                                            <span>
+                                                Not Completed
+                                            </span>
+                                        <% } %>
+                                        <% if(item.task.description){ %>
+                                            <p style="margin-top:8px;">
+                                                <%= item.task.description %>
+                                            </p>
+                                        <% } %>
+                                    <% } %>
+                                </div>
+                            <% }) %>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+            <div class="profile-actions" style="margin-top:20px;">
+                <a href="/admin/visits" class="cancel-link">
+                    Back to Visits
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<%- include('partials/footer') %>
+</body>
+</html>

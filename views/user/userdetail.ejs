@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopefield Homecare</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('partials/navbar', { user: user }) %>
+    <div class="grid">
+        <div class="content_section">
+            <div class="profile-card">
+                <div class="detail-header">
+                    <h3><%= profileUser.userType.toUpperCase() %> Profile</h3>
+                    <button onclick="history.back()" class="back-btn-small">Back</button>
+                </div>
+                
+                <div class="profile-details">
+                    <div class="detail-group">
+                        <p><strong>Username:</strong> <span><%= profileUser.username %></span></p>
+                        <p><strong>Full Name:</strong> <span><%= profileUser.userForename %> <%= profileUser.userSurname %></span></p>
+                        <p><strong>Status:</strong> 
+                            <span class="status-badge <%= profileUser.userStatus ? 'status-resolved' : 'status-pending' %>">
+                                <%= profileUser.userStatus ? 'Active' : 'Inactive' %>
+                            </span>
+                        </p>
+                    </div>
+
+                    <hr>
+
+                    <div class="detail-group">
+                        <h4>Personal Information</h4>
+                        <p><strong>Date of Birth:</strong> 
+                            <span><%= profileUser.userDOB ? profileUser.userDOB.toDateString() : 'Not provided' %></span>
+                        </p>
+                        <% if (profileUser.nhsNumber) { %>
+                            <p><strong>NHS Number:</strong> <span><%= profileUser.nhsNumber %></span></p>
+                        <% } %>
+                    </div>
+
+                    <hr>
+
+                    <div class="detail-group">
+                        <h4>Contact Details</h4>
+                        <p><strong>Phone:</strong> <span><%= profileUser.phoneNumber || 'N/A' %></span></p>
+                        
+                        <p><strong>Address:</strong></p>
+                        <ul style="list-style: none; padding-left: 15px; color: #444;">
+                            <li><%= profileUser.userAddress.street %></li>
+                            <li><%= profileUser.userAddress.town %></li>
+                            <li><%= profileUser.userAddress.county %></li>
+                            <li><%= profileUser.userAddress.postcode %></li>
+                            <li><%= profileUser.userAddress.country %></li>
+                        </ul>
+                    </div>
+                    
+                    <% if (user.adminAC) { %>
+                        <hr>
+                        <div class="admin-only-section" style="background: #f8f9fa; padding: 10px; border-radius: 5px;">
+                            <p style="color: #666; font-size: 0.8rem; margin-bottom: 5px;"><strong>Admin Information:</strong></p>
+                            <p><strong>Database ID:</strong> <small><%= profileUser._id %></small></p>
+                            <p>
+                                <strong>System Admin Access:</strong> 
+                                <span class="status-badge <%= profileUser.adminAC ? 'status-resolved' : '' %>">
+                                    <%= profileUser.adminAC ? "Full Access" : "No" %>
+                                </span>
+                            </p>
+                        </div>
+                    <% } %>
+                </div>
+
+                <div class="profile-actions">
+                    <% if (carePlan && (user.adminAC || user.userType === 'client' || user.userType === 'carer')) { %>
+                        <a href="/user/careplan/details/<%= carePlan._id %>" class="button-link" style="background-color: #28a745;">View Care Plan</a>
+                    <% } else if (user.adminAC && profileUser.userType === "client") { %>
+                        <a href="/admin/create/careplan/<%= profileUser._id %>" class="button-link"> Create Care Plan </a>
+                    <% } %>
+                    
+                    <a href="/user/timetable" class="button-link secondary">Return to Timetable</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <%- include('partials/footer')%>
+</body>
+</html>

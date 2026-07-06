@@ -1,0 +1,47 @@
+<div class="navbar-header">
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+</div>
+
+<div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<div id="mySidebar" class="sidebar">
+    <div class="sidebar-header">
+        <h3>Hopefield Homecare</h3>
+        <button class="close-btn" onclick="toggleSidebar()">&times;</button>
+    </div>
+    <ul class="sidebar-links">
+    <% if (locals.user && user.userType === 'admin') { %>
+        <li><a href="/admin/requests">Requests</a></li>
+        <li><a href="/admin/clients">Clients</a></li>
+        <li><a href="/admin/staff">Staff</a></li>
+        <li><a href="/admin/visits">Visits</a></li>
+        <li><a href="/admin/tasks">Tasks</a></li>
+        <li><a href="/admin/routines">Routines</a></li>
+        <li><a href="/admin/create">Create</a></li>
+        <hr>
+    <% } %>
+    
+    <% if (locals.user) { %>
+        <li><a href="/user/profile">Profile</a></li>
+        <li><a href="/user/request">Report</a></li>
+        <li><a href="/user/timetable">Timetable</a></li>
+        <hr>
+        <li><a href="/logout" class="logout-link">Logout</a></li>
+    <% } else { %>
+        <li><a href="/login">Login</a></li>
+    <% } %>
+    </ul>
+</div>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById("mySidebar");
+        const overlay = document.getElementById("sidebarOverlay");
+        sidebar.classList.toggle("open");
+        overlay.classList.toggle("visible");
+    }
+</script>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopefield Homecare</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="navbar-header" style="display: flex; justify-content: space-between; align-items: center; padding: 0 20px; height: 60px; position: sticky; top: 0; z-index: 1000;">
+        <div style="color: white; font-weight: bold; font-size: 1.2rem;">Hopefield Homecare</div>
+        <nav>
+            <ul class="btn-group_horizontal" style="background: none; margin: 0;">
+                <li><a href="/home/about">About Us</a></li>
+                <li><a href="/">Home</a></li>
+                <li><a href="/home/login">Login</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <section class="main-display">
+        <div class="main-left">
+            <h1>Contact Us</h1>
+            <div class="contact-info-content" style="text-align: center; padding: 20px;">
+                <p><strong>Our Office:</strong><br>
+                123 Care Street, Healthcare City, HC1 2AB</p>
+                
+                <p><strong>Phone:</strong><br>
+                01234 567891</p>
+                
+                <p><strong>Email:</strong><br>
+                support@hopefield.com</p>
+                
+                <img src="/images/logo.png" style="height: 200px; width: 200px; margin-top: 20px;">
+                <p style="margin-top: 20px; font-style: italic;">"Giving care to those that need it"</p>
+            </div>
+        </div>
+
+        <div class="main-right" style="display: flex; flex-direction: column; justify-content: center; padding: 40px;">
+            <div class="profile-card" style="width: 100%; max-width: 500px; margin: 0 auto;">
+                <form action="/home/contact" method="POST">
+                    <label for="name">Full Name:</label>
+                    <input type="text" id="name" name="name" placeholder="Your name..." required />
+
+                    <label for="email">Email Address:</label>
+                    <input type="email" id="email" name="email" placeholder="Your email..." required />
+
+                    <label for="message">How can we help?</label>
+                    <textarea id="message" name="message" rows="6" placeholder="Write your message here..." required style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 4px;"></textarea>
+
+                    <input type="submit" value="Submit Inquiry" style="width: 100%; cursor: pointer;" />
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <%- include('partials/footer')%>
+</body>
+</html>

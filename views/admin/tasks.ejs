@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopefield Homecare - Task List</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('../partials/navbar', { user: user }) %>
+    
+    <div class="grid">
+        <div class="content_section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Task List</h2>
+                <a href="/admin/create/task" class="button-link">Add New Task</a>
+            </div>
+
+            <% if (tasks.length > 0) { %>
+                <input type="text" id="taskSearch" class="search-input" placeholder="Search by task name, category, or description...">
+                <div class="table-scroll">
+                    <table class="timetable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Dosage</th>
+                                <th>Description</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="taskTableBody">
+                            <% tasks.forEach(task => { %>
+                                <tr data-search="<%= `${task.taskName} ${task.category} ${task.description || ''}`.toLowerCase() %>">
+                                    <td><strong><%= task.taskName %></strong></td>
+                                    <td>
+                                        <span class="badge" style="text-transform: capitalize;">
+                                            <%= task.category %>
+                                        </span>
+                                    </td>
+                                    <td><%= task.dosage || '' %></td>
+                                    <td><%= task.description %></td>
+                                    <td>
+                                        <div style="display:flex; gap:15px; align-items:center;">
+                                            <a href="/admin/edit_task/<%= task._id %>" class="text-link btn-edit">
+                                                Edit
+                                            </a>
+
+                                            <form action="/admin/delete_task/<%= task._id %>" 
+                                                  method="POST" 
+                                                  onsubmit="return confirm('Delete this task?');" 
+                                                  style="display:flex;">
+                                                
+                                                <button type="submit" class="text-link btn-delete">
+                                                    Delete
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            <% } else { %>
+                <p style="margin-top: 20px;">No tasks created yet. <a href="/admin/create/task">Create one now.</a></p>
+            <% } %>
+        </div>
+
+        <div>
+            <a class="nav-btn" href="/admin/index">Back to Admin Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        const taskSearch = document.getElementById('taskSearch');
+        if (taskSearch) {
+            taskSearch.addEventListener('input', function () {
+                const filter = this.value.toLowerCase();
+                document.querySelectorAll('#taskTableBody tr').forEach(row => {
+                    row.style.display = row.dataset.search.includes(filter) ? '' : 'none';
+                });
+            });
+        }
+    </script>
+
+    <%- include('../partials/footer') %>
+</body>
+</html>

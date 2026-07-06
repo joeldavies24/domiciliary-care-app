@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopefield Homecare</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('../../partials/navbar', { user: user }) %>
+    <div class="grid">
+        <div class="content_section">
+            <div class="profile-card">
+                <h2>Create New Care Task</h2>
+                <hr>
+                <form action="/admin/create/task" method="POST" class="standard-form">
+                    
+                    <div class="form-group">
+                        <label for="taskName">Task Name:</label>
+                        <input type="text" id="taskName" name="taskName" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Category:</label>
+                        <select name="category" id="category" required>
+                            <option value="Personal Care" selected>Personal Care</option>
+                            <option value="Medication">Medication</option>
+                            <option value="Health Check">Health Check</option>
+                            <option value="Domestic">Domestic</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="dosageGroup" style="display: none;">
+                        <label for="dosage">Dosage:</label>
+                        <input type="text" id="dosage" name="dosage" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Task Description:</label>
+                        <textarea id="description" name="description" rows="4" placeholder="Carer instructions..."></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="button-link">Save Task</button>
+                        <a href="/admin/tasks" class="cancel-link">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const categorySelect = document.getElementById('category');
+        const dosageGroup = document.getElementById('dosageGroup');
+
+        categorySelect.addEventListener('change', function() {
+            if (this.value === 'Medication') {
+                dosageGroup.style.display = 'block';
+            } else {
+                dosageGroup.style.display = 'none';
+                document.getElementById('dosage').value = '';
+            }
+        });
+    </script>
+    <%- include('../../partials/footer') %>
+</body>
+</html>

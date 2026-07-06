@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopefield Homecare</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('partials/navbar', { user: user }) %>
+    <div class="grid">
+        <div class="content_section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Care Routine List</h2>
+                <a href="/admin/create/routine" class="button-link">Create New Routine</a>
+            </div>
+
+            <input type="text" id="routineSearch" class="search-input" placeholder="Search by routine name or client...">
+
+            <div class="table-scroll">
+                <table class="timetable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Client</th>
+                            <th>Tasks</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="routineTableBody">
+                        <% routines.forEach(function(routine) {
+                            const client = routine.clientId;
+                            const clientName = client ? `${client.userForename} ${client.userSurname}` : 'Unknown';
+                            const searchText = `${routine.routineName} ${clientName} ${routine.description || ''}`.toLowerCase();
+                        %>
+                            <tr data-search="<%= searchText %>">
+                                <td><strong><%= routine.routineName %></strong></td>
+                                <td>
+                                    <a href="/user/details/<%= client?._id %>" class="view-link">
+                                        <%= clientName %>
+                                    </a>
+                                </td>
+                                <td><%= routine.tasks.length %> task<%= routine.tasks.length !== 1 ? 's' : '' %></td>
+                                <td><%= routine.description || '—' %></td>
+                                <td>
+                                    <div style="display:flex;gap:10px;align-items:center;">
+                                        <a href="/admin/routine/<%= routine._id %>" class="text-link">
+                                            View
+                                        </a>
+
+                                        <a href="/admin/edit_routine/<%= routine._id %>" class="text-link" style="color:#3498db;">
+                                            Edit
+                                        </a>
+
+                                        <form action="/admin/delete_routine/<%= routine._id %>" method="POST" onsubmit="return confirm('Delete this routine?');">
+                                            <button type="submit" class="text-link btn-delete">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div>
+            <a class="nav-btn" href="/admin/index">Back to Admin Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('routineSearch').addEventListener('input', function () {
+            const filter = this.value.toLowerCase();
+            document.querySelectorAll('#routineTableBody tr').forEach(row => {
+                row.style.display = row.dataset.search.includes(filter) ? '' : 'none';
+            });
+        });
+    </script>
+
+    <%- include('partials/footer') %>
+</body>
+</html>

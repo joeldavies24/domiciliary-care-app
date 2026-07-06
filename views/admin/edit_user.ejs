@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopefield Homecare</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<%- include('partials/navbar', { user: user }) %>
+
+<div class="grid">
+    <div class="content_section">
+        <div class="profile-card">
+            <h2>Edit User</h2>
+            <hr>
+
+            <% if(error){ %>
+                <div class="error-box">
+                    <%= error %>
+                </div>
+            <% } %>
+
+            <form action="/admin/edit_user/<%= editUser._id %>" method="POST">
+
+                <div class="form-group">
+                    <label>Forename</label>
+                    <input type="text" name="userForename" value="<%= editUser.userForename %>" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Surname</label>
+                    <input type="text" name="userSurname" value="<%= editUser.userSurname %>" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="text" name="phoneNumber" value="<%= editUser.phoneNumber %>">
+                </div>
+
+                <div class="form-group">
+                    <label>Status</label>
+                    <select name="userStatus">
+                        <option value="true" <%= editUser.userStatus ? 'selected' : '' %>>
+                            Active
+                        </option>
+                        <option value="false" <%= !editUser.userStatus ? 'selected' : '' %>>
+                            Inactive
+                        </option>
+                    </select>
+                </div>
+
+                <% if(editUser.userType !== 'client'){ %>
+                    <div class="form-group">
+                        <label>Admin Access</label>
+                        <select name="adminAC">
+                            <option value="true" <%= editUser.adminAC ? 'selected' : '' %>>
+                                Full Access
+                            </option>
+                            <option value="false" <%= !editUser.adminAC ? 'selected' : '' %>>
+                                Standard
+                            </option>
+                        </select>
+                    </div>
+                <% } %>
+
+                <% if(editUser.userType === 'admin'){ %>
+                    <div class="form-group">
+                        <label>Admin Password Confirmation</label>
+                        <input type="password" name="adminPassword" placeholder="Enter admin password" required>
+                    </div>
+                <% } %>
+
+                <div style="display: flex; gap: 15px; margin-top: 20px;">
+                    <button type="submit" class="button-link">
+                        Save Changes
+                    </button>
+
+                    <a href="/admin/index" class="cancel-link">
+                        Cancel
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
+</body>
+</html>

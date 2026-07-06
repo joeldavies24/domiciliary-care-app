@@ -1,0 +1,6 @@
+express-session
+passport
+mongoose
+passport-local-mongoose
+ejs
+jest

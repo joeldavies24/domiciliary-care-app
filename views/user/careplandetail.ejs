@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopefield Homecare</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('partials/navbar', { user: user }) %>
+
+    <div class="grid">
+        <div class="content_section">
+            <div class="profile-card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2>Care Plan: <%= carePlan.clientId.userForename %> <%= carePlan.clientId.userSurname %></h2>
+                    <span class="badge badge-gray">Last Reviewed: <%= carePlan.lastReviewDate.toLocaleDateString('en-GB') %></span>
+                </div>
+                <hr>
+
+                <div class="care-section">
+                    <h3>Medical Overview</h3>
+                    <div class="card-sub-section">
+                        <p><strong>Allergies:</strong> 
+                            <% if (carePlan.allergies && carePlan.allergies.length > 0) { %>
+                                <span class="status-badge status-open"><%= carePlan.allergies.join(', ') %></span>
+                            <% } else { %>
+                                <span class="text-muted">No known allergies</span>
+                            <% } %>
+                        </p>
+                        <p><strong>Dietary Requirements:</strong> <%= carePlan.dietaryRequirements && carePlan.dietaryRequirements.length > 0 ? carePlan.dietaryRequirements.join(', ') : 'None specified' %></p>
+                        <p><strong>Mobility:</strong> <%= carePlan.mobilityRestrictions || 'No restrictions' %></p>
+                    </div>
+                </div>
+
+                <div class="care-section">
+                    <h3>Emergency Contacts</h3>
+                    <div class="contact-grid">
+                        <% carePlan.emergencyContacts.forEach(contact => { %>
+                            <div class="contact-entry card-sub-section">
+                                <strong><%= contact.name %></strong> (<%= contact.relation %>)<br>
+                                <span class="text-link"><%= contact.mobile %></span>
+                            </div>
+                        <% }) %>
+                    </div>
+                </div>
+
+                <% if (carePlan.adminNotes) { %>
+                <div class="care-section">
+                    <h3>Admin Notes</h3>
+                    <div class="card-sub-section">
+                        <p><%= carePlan.adminNotes %></p>
+                    </div>
+                </div>
+                <% } %>
+
+                <div class="profile-actions" style="margin-top: 20px;">
+                    <a href="/user/index" class="button-link">Back to user dashboard</a>
+                    <% if (user.adminAC) { %>
+                        <a href="/careplan/edit/<%= carePlan._id %>" class="button-link">Edit Care Plan</a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('partials/footer') %>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopefield Homecare</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('../partials/navbar', { user: user }) %>
+    
+    <div class="grid">
+        <div class="timetable-header">
+            <div class="nav-container">
+                <a href="/user/timetable?weekOffset=<%= weekOffset - 1 %>" class="nav-btn">Previous Week</a>
+                <span class="current-week-label" style="text-align: center;">
+                    <h2>Week of <%= weekDates[0].toLocaleDateString('en-GB') %></h2>
+                    <div id="geo-status" style="font-size: 0.85rem; color: #666; margin-bottom: 10px;">
+                    Checking location access...
+            </div>
+                </span>
+                <a href="/user/timetable?weekOffset=<%= weekOffset + 1 %>" class="nav-btn">Next Week</a>
+            </div>
+        </div>
+
+        <div class="timetable-responsive-wrapper">
+            <table class="timetable">
+                <thead>
+                    <tr>
+                        <% const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]; %>
+                        <% weekDates.forEach((date, index) => { %>
+                            <th class="<%= date.toDateString() === new Date().toDateString() ? 'today-header' : '' %>">
+                                <span class="day-name"><%= dayNames[index] %></span><br>
+                                <small class="day-date"><%= date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) %></small>
+                            </th>
+                        <% }) %>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <% weekDates.forEach(currentDate => { %>
+                            <td class="<%= currentDate.toDateString() === new Date().toDateString() ? 'today-cell' : '' %>">
+                                <% 
+                                    const cellDateStr = currentDate.getFullYear() + '-' + String(currentDate.getMonth() + 1).padStart(2, '0') + '-' + String(currentDate.getDate()).padStart(2, '0');
+                                    const daily = visits.filter(v => v.date === cellDateStr);
+                                    daily.sort((a, b) => a.scheduledStart.localeCompare(b.scheduledStart));
+                                %>
+
+                                <div class="visit-list-container">
+                                    <% if (daily.length > 0) { %>
+                                        <% daily.forEach(v => { %>
+                                            <a href="/user/visitation/<%= v._id %>" class="visit-card-link js-visit-card" data-lat="<%= v.clientId?.userAddress?.coordinates?.latitude || 0 %>" data-lng="<%= v.clientId?.userAddress?.coordinates?.longitude || 0 %>">
+                                               
+                                                <div class="visit-card status-<%= v.checkOut ? 'completed' : (v.checkIn ? 'progress' : 'scheduled') %>">
+                                                    <div class="visit-time">
+                                                        <%= v.scheduledStart %> - <%= v.scheduledEnd %>
+                                                    </div>
+                                                    <div class="visit-client">
+                                                        <strong>
+                                                            <%= v.clientId ? v.clientId.userForename + ' ' + v.clientId.userSurname : 'Unknown Client' %>
+                                                        </strong>
+                                                    </div>
+                                                    
+                                                    <div class="visit-distance" style="font-size: 0.9rem; margin-top: 5px; color: #435b6e; font-weight: bold;"></div>
+                                                </div>
+                                            </a>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <div class="no-visits">No visits</div>
+                                    <% } %>
+                                </div>
+                            </td>
+                        <% }) %>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer-links" style="margin-top: 20px; text-align: center;">
+            <a href="/user/timetable" class="nav-btn">Reset to Current Week</a> 
+            <span class="separator"></span> 
+            <a href="/user/index" class="nav-btn">Back Home</a>
+        </div>
+    </div>
+
+    <script>
+        const statusDisplay = document.getElementById("geo-status");
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.watchPosition(updateDistances, showError, {
+                    enableHighAccuracy: true
+                });
+            } else {
+                statusDisplay.innerHTML = "Geolocation not supported.";
+            }
+        }
+
+        // The Coding Train (2019) 2.2 Geolocation Web API - Working with Data and APIs in JavaScript, YouTube. Available at: https://www.youtube.com/watch?v=3ls013DBcww
+        function updateDistances(position) {
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
+            statusDisplay.innerHTML = "Location synced";
+
+            const cards = document.querySelectorAll(".js-visit-card");
+            
+            cards.forEach(card => {
+                const destLat = parseFloat(card.getAttribute("data-lat"));
+                const destLng = parseFloat(card.getAttribute("data-lng"));
+                const distField = card.querySelector(".visit-distance");
+                if (!distField) return;
+
+                if (!isNaN(destLat) && !isNaN(destLng) && destLat !== 0 && destLng !== 0) {
+                    const distance = calculateDistance(userLat, userLng, destLat, destLng);
+                    if (distance < 1) {
+                        distField.innerHTML = Math.round(distance * 1000) + "m away";
+                    } else {
+                        distField.innerHTML = distance.toFixed(1) + "km away";
+                    }
+                } else {
+                    distField.innerHTML = "No location";
+                }
+            });
+        }
+
+        function showError(error) {
+            statusDisplay.innerHTML = "GPS disabled/unavailable.";
+        }
+
+        // Sumit Sakpal (2025) How to Calculate Distance Between Two Coordinates in JavaScript Using Haversine Formula, Medium. Available at: https://medium.com/@sumitsakpal02/how-to-calculate-distance-between-two-coordinates-in-javascript-using-haversine-formula-c2dc0f5d524c.
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; 
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+        window.onload = getLocation;
+    </script>
+
+    <%- include('../partials/footer') %>
+</body>
+</html>

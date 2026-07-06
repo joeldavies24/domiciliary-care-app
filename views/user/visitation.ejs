@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homecare - Visit Detail</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<%- include('partials/navbar', { user: user }) %>
+
+<% const isClient = user.userType === 'client'; %>
+
+<div class="grid">
+    <div class="content_section">
+        <div class="profile-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <h2>Visit Information</h2>
+                <% if (visit.checkIn && !visit.checkOut) { %>
+                    <span>
+                        In Progress
+                    </span>
+                <% } else if (visit.checkOut) { %>
+                    <span>
+                        Completed
+                    </span>
+                <% } else { %>
+                    <span>
+                        Scheduled
+                    </span>
+                <% } %>
+            </div>
+            <hr>
+            <div class="profile-details">
+                <p>
+                    <strong>Client:</strong> 
+                    <% if (visit.clientId) { %>
+                        <a href="/user/details/<%= visit.clientId._id %>" class="text-link">
+                            <%= visit.clientId.userForename %> <%= visit.clientId.userSurname %>
+                        </a>
+                    <% } else { %>
+                        <span class="text-danger">Client data missing (User may have been deleted)</span>
+                    <% } %>
+                </p>
+
+                <p>
+                    <strong>Carer(s):</strong>
+                    <% if(Array.isArray(visit.carerId)) { %>
+                        <% visit.carerId.forEach(function(carer, index){ %>
+                            <a href="/user/details/<%= carer._id %>" class="text-link">
+                                <%= carer.userForename %>
+                                <%= carer.userSurname %>
+                            </a>
+                            <% if(index < visit.carerId.length - 1){ %>
+                                ,
+                            <% } %>
+                        <% }) %>
+                    <% } %>
+                </p>
+                <div class="card-sub-section" style="background:#f8f9fa;padding:18px;border-radius:10px;margin:20px 0;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <h4 style="margin:0;">
+                            Client Address
+                        </h4>
+                        <small id="geo-status" style="color:#666;">
+                            Syncing GPS...
+                        </small>
+                    </div>
+
+                    <hr style="margin:10px 0;">
+                    <div style="line-height:1.7;">
+                        <% if (visit.clientId.userAddress) { %>
+                            <% if (visit.clientId.userAddress.street) { %>
+                                <%= visit.clientId.userAddress.street %><br>
+                            <% } %>
+                            <% if (visit.clientId.userAddress.town) { %>
+                                <%= visit.clientId.userAddress.town %><br>
+                            <% } %>
+                            <% if (visit.clientId.userAddress.county) { %>
+                                <%= visit.clientId.userAddress.county %><br>
+                            <% } %>
+                            <% if (visit.clientId.userAddress.postcode) { %>
+                                <strong>
+                                    <a href="https://www.google.com/maps/search/?api=1&query=<%= encodeURIComponent(`${visit.clientId.userAddress.street || ''} ${visit.clientId.userAddress.town || ''} ${visit.clientId.userAddress.postcode || ''}`) %>" target="_blank" class="text-link">
+                                        <%= visit.clientId.userAddress.postcode %>
+                                    </a>
+                                </strong><br>
+                            <% } %>
+                            <% if (visit.clientId.userAddress.country) { %>
+                                <%= visit.clientId.userAddress.country %>
+                            <% } %>
+                        <% } %>
+                    </div>
+                    <div id="distance-text" style="margin-top:15px; background:#e9f3ff; padding:12px; border-radius:8px; font-weight:bold;">
+                        Detecting distance...
+                    </div>
+                </div>
+                <p>
+                    <strong>Scheduled Time:</strong>
+                    <%= visit.scheduledStart %>
+                    -
+                    <%= visit.scheduledEnd %>
+                </p>
+                <% if (visit.checkIn) { %>
+                    <p>
+                        <strong>Check-in:</strong>
+                        <span class="text-success">
+                            <%= new Date(visit.checkIn)
+                                .toLocaleTimeString('en-GB') %>
+                        </span>
+                    </p>
+                <% } %>
+                <% if (visit.checkOut) { %>
+                    <p>
+                        <strong>Check-out:</strong>
+                        <span class="text-danger">
+                            <%= new Date(visit.checkOut).toLocaleTimeString('en-GB') %>
+                        </span>
+                    </p>
+                <% } %>
+                <% if (visit.clientFeeling) { %>
+                    <div style="margin-top:15px;">
+                        <strong>Client Wellbeing:</strong>
+                        <div style="margin-top:8px;">
+                            <% if(visit.clientFeeling === "great"){ %>
+                                😊 Great
+                            <% } %>
+
+                            <% if(visit.clientFeeling === "good"){ %>
+                                🙂 Good
+                            <% } %>
+
+                            <% if(visit.clientFeeling === "okay"){ %>
+                                😐 Okay
+                            <% } %>
+
+                            <% if(visit.clientFeeling === "sad"){ %>
+                                😟 Sad
+                            <% } %>
+
+                            <% if(visit.clientFeeling === "bad"){ %>
+                                😢 Bad
+                            <% } %>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+            <hr>
+            <div class="visit-actions" style="margin-top:20px;">
+                <% if (!visit.checkIn) { %>
+                    <form action="/user/visitation/<%= visit._id %>/clockin" method="POST">
+                        <input type="hidden" name="lat" id="lat">
+                        <input type="hidden" name="lng" id="lng">
+                        <button type="submit" class="button-link" style="background:#0056b3;border:none;width:100%;" <%= isClient ? 'disabled' : '' %>>
+                            Clock In
+                        </button>
+                    </form>
+                <% } else if (visit.checkIn && !visit.checkOut) { %>
+                    <form action="/user/visitation/<%= visit._id %>/clockout" method="POST">
+                        <h3 style="margin-bottom:15px;">
+                            Visit Tasks
+                        </h3>
+                        <%
+                        const groupedTasks = {};
+                        visit.tasks.forEach((item, index) => {
+                            let category = "Other";
+                            if(item.task && item.task.category){
+                                category = item.task.category;
+                            }
+                            if(!groupedTasks[category]){
+                                groupedTasks[category] = [];
+                            }
+                            groupedTasks[category].push({
+                                item,
+                                index
+                            });
+                        });
+                        %>
+                        <% Object.keys(groupedTasks).forEach(category => { %>
+                            <details open class="task-dropdown" style="margin-bottom:15px;">
+                                <summary class="task-category-title">
+                                    <%= category %>
+                                    (<%= groupedTasks[category].length %>)
+                                </summary>
+                                <div class="task-category-content">
+                                    <% groupedTasks[category].forEach(({ item, index }) => { %>
+                                    <details class="task-item-card" style="margin-bottom:12px; border:1px solid #ddd; border-radius:8px; padding:12px; background:#fff;">
+                                        <summary style="cursor:pointer; display:flex; align-items:center; gap:10px; list-style:none;">
+                                            <input type="checkbox" name="tasks[<%= index %>][completed]" value="true" <%= isClient ? 'disabled' : '' %>>
+                                            <% if(item.task) { %>
+                                                <input type="hidden" name="tasks[<%= index %>][task]" value="<%= item.task._id %>" >
+                                                <strong>
+                                                    <%= item.task.taskName %>
+                                                </strong>
+                                                <span style="margin-left:auto; font-size:12px; background:#f1f1f1; padding:4px 8px; border-radius:20px;">
+                                                    <%= item.task.category %>
+                                                </span>
+                                            <% } else { %>
+                                                <strong>
+                                                    <%= item.taskName %>
+                                                </strong>
+                                            <% } %>
+                                        </summary>
+                                        <% if(item.task) { %>
+                                            <div style="margin-top:15px; padding-top:10px; border-top:1px solid #eee;">
+                                                <% if(item.task.description) { %>
+                                                    <p style="margin-bottom:10px;">
+                                                        <strong>Description:</strong><br>
+                                                        <%= item.task.description %>
+                                                    </p>
+                                                <% } %>
+                                                <% if(item.task.dosage) { %>
+                                                    <div>
+                                                        Dosage:
+                                                        <strong>
+                                                            <%= item.task.dosage %>
+                                                        </strong>
+                                                    </div>
+                                                <% } %>
+                                            </div>
+                                        <% } %>
+                                    </details>
+                                    <% }) %>
+                                </div>
+                            </details>
+                        <% }) %>
+
+                        <div style="margin-top:25px;">
+                            <label style="display:block;margin-bottom:12px;">
+                                Client Wellbeing
+                            </label>
+
+                            <div class="wellbeing-selector" style="display:flex; gap:15px; flex-wrap:wrap; align-items:center; justify-content:flex-start; margin-top:10px;">
+                                <label class="mood-option">
+                                    <input type="radio" name="clientFeeling" value="bad" <%= isClient ? 'disabled' : '' %>>
+                                    <span class="mood-face">😢</span>
+                                    <small>Bad</small>
+                                </label>
+
+                                <label class="mood-option">
+                                    <input type="radio" name="clientFeeling" value="sad" <%= isClient ? 'disabled' : '' %>>
+                                    <span class="mood-face">😟</span>
+                                    <small>Sad</small>
+                                </label>
+
+                                <label class="mood-option">
+                                    <input type="radio" name="clientFeeling" value="okay" <%= isClient ? 'disabled' : '' %>>
+                                    <span class="mood-face">😐</span>
+                                    <small>Okay</small>
+                                </label>
+
+                                <label class="mood-option">
+                                    <input type="radio" name="clientFeeling" value="good" <%= isClient ? 'disabled' : '' %>>
+                                    <span class="mood-face">🙂</span>
+                                    <small>Good</small>
+                                </label>
+
+                                <label class="mood-option">
+                                    <input type="radio" name="clientFeeling" value="great" <%= isClient ? 'disabled' : '' %>>
+                                    <span class="mood-face">😊</span>
+                                    <small>Great</small>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:20px;">
+                            <label for="visitNotes">
+                                Visit Notes
+                            </label>
+                            <textarea name="notes" id="visitNotes" rows="5" style="width:100%;margin-top:5px;padding:10px;" placeholder="Enter visit notes..." <%= isClient ? 'disabled' : '' %>></textarea>
+                        </div>
+
+                        <button type="submit" class="button-link" style="background:#0056b3;border:none;width:100%;margin-top:20px;" <%= isClient ? 'disabled' : '' %>>
+                            Complete Visit & Clock Out
+                        </button>
+                    </form>
+                <% } else { %>
+                    <div class="card-sub-section" style="background:#f8f9fa;text-align:center;padding:20px;border-radius:10px;">
+                        <p>
+                            This visit has been completed and logged.
+                        </p>
+                        <a href="/user/timetable" class="button-link">
+                            Return to Timetable
+                        </a>
+                    </div>
+                <% } %>
+            </div>
+            <div class="profile-actions" style="margin-top:20px;">
+                <a href="/user/timetable" class="cancel-link">
+                    Back to Timetable
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+const statusDisplay = document.getElementById("geo-status");
+const distanceDisplay = document.getElementById("distance-text");
+
+const destLat = parseFloat("<%= visit.clientId?.userAddress?.coordinates?.latitude || 0 %>");
+const destLng = parseFloat("<%= visit.clientId?.userAddress?.coordinates?.longitude || 0 %>");
+
+function getLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(
+            showPosition,
+            showError,
+            {
+                enableHighAccuracy: true
+            }
+        );
+    } else {
+        statusDisplay.innerHTML = "GPS unavailable";
+    }
+}
+
+// The Coding Train (2019) 2.2 Geolocation Web API - Working with Data and APIs in JavaScript, YouTube. Available at: https://www.youtube.com/watch?v=3ls013DBcww
+function showPosition(position) {
+    const userLat = position.coords.latitude;
+    const userLng = position.coords.longitude;
+    statusDisplay.innerHTML = "GPS synced";
+    if(document.getElementById('lat')) {
+        document.getElementById('lat').value = userLat;
+    }
+    if(document.getElementById('lng')) {
+        document.getElementById('lng').value = userLng;
+    }
+    if(!isNaN(destLat) &&
+       !isNaN(destLng) &&
+       destLat !== 0) {
+        const distance =
+            calculateDistance(
+                userLat,
+                userLng,
+                destLat,
+                destLng
+            );
+
+        if(distance < 1){
+            distanceDisplay.innerHTML =
+                `${Math.round(distance * 1000)}m away`;
+        } else {
+            distanceDisplay.innerHTML =
+                `${distance.toFixed(1)}km away`;
+        }
+    } else {
+        distanceDisplay.innerHTML =
+            "Client coordinates unavailable";
+    }
+}
+function showError() {
+    statusDisplay.innerHTML =
+        "GPS unavailable";
+    distanceDisplay.innerHTML =
+        "Distance unavailable";
+}
+
+// Sumit Sakpal (2025) How to Calculate Distance Between Two Coordinates in JavaScript Using Haversine Formula, Medium. Available at: https://medium.com/@sumitsakpal02/how-to-calculate-distance-between-two-coordinates-in-javascript-using-haversine-formula-c2dc0f5d524c.
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; 
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+    }
+    window.onload = getLocation;
+</script>
+
+<%- include('partials/footer') %>
+
+</body>
+</html>

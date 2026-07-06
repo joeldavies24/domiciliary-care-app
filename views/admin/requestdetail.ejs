@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hopefield Homecare</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('../partials/navbar', { user: user }) %>
+
+    <div class="grid">
+        <div class="content_section">
+            <div class="profile-card">
+                <div class="detail-header">
+                    <h2>Request #<%= request._id.toString().slice(-6).toUpperCase() %></h2>
+                    <span class="status-badge <%= request.status.toLowerCase() %>">
+                        <%= request.status %>
+                    </span>
+                </div>
+                <hr>
+
+                <div class="detail-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="info-section">
+                        <h4></h4>
+                        <% if (request.requesterId) { %>
+                            <p><strong>Name:</strong> <%= request.requesterId.userForename %> <%= request.requesterId.userSurname %></p>
+                            <p><strong>Username:</strong> <%= request.requesterId.username %></p>
+                            <p><strong>Email:</strong> <%= request.requesterId.email %></p>
+                        <% } else { %>
+                            <p><strong>Name:</strong> <%= request.guestName %></p>
+                            <p><strong>Email:</strong> <%= request.guestEmail %></p>
+                        <% } %>
+                    </div>
+                    <div class="info-section">
+                        <h4></h4>
+                        <p><strong>Request Type:</strong> <%= request.requestType %></p>
+                        <% if (request.requestType === 'Other') { %>
+                            <p><strong>Specific Type:</strong> <%= request.otherDetails %></p>
+                        <% } %>
+                        <p><strong>Submitted:</strong> <%= request.createdAt.toDateString() %> at <%= request.createdAt.toLocaleTimeString() %></p>
+                    </div>
+                </div>
+                <hr>
+
+                <div class="request-content">
+                    <h4>Description of Issue:</h4>
+                    <div class="details-box">
+                        <%= request.details %>
+                    </div>
+                </div>
+                <hr>
+                <div class="admin-actions">
+                    <form action="/admin/requests/<%= request._id %>/resolve" method="POST" class="standard-form">
+                        <div class="form-group">
+                            <label>Admin Notes:</label>
+                            <textarea name="adminNotes" rows="4"><%= request.adminNotes || '' %></textarea>
+                        </div>
+                        <div class="profile-actions">
+                            <% if (request.status === 'Pending') { %>
+                                <button type="submit" class="clock-btn-in">Save and Mark Resolved</button>
+                            <% } else { %>
+                                <button type="submit" class="nav-btn">Update Notes</button>
+                            <% } %>
+                            <a href="/admin/requests" class="nav-btn" style="background: #666;">Back to List</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

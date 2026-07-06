@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopefield Homecare</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="navbar-header" style="display: flex; justify-content: space-between; align-items: center; padding: 0 20px; height: 60px; position: sticky; top: 0; z-index: 1000;">
+        <div style="color: white; font-weight: bold; font-size: 1.2rem;">Hopefield Homecare</div>
+        <nav>
+            <ul class="btn-group_horizontal" style="background: none; margin: 0;">
+                <li><a href="/">Home</a></li>
+                <li><a href="/home/contact">Contact</a></li>
+                <li><a href="/home/login">Login</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="grid">
+        <div class="content_section">
+            <div class="profile-card">
+                <h2>About Hopefield Homecare</h2>
+                <hr>
+                
+                <div class="care-section">
+                    <div class="card-sub-section">
+                        <p>We have served the Greater Manchester area for over 10 years, suppling care to those that need it. We have overcome every challenge that has been thrown our way, maintaining a strong security even during the pandemic. We pride ourselves on keeping our staff and clients happy in the face of adversity and would gladly accept those in need of our services.</p>
+                    </div>
+                </div>
+
+                <div class="care-section">
+                    <h3>What We Provide</h3>
+                    <div class="card-sub-section">
+                        <ul>
+                            <li>Friendly care staff</li>
+                            <li>Care whenever you need it</li>
+                            <li>Extensive monitoring of client health</li>
+                            <li>Fast error response time</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="care-section">
+                    <h3>How to sign up</h3>
+                    <div class="card-sub-section">
+                        <p>Call or visit your local Hopefield centre so that we can help you decide what care best suits your needs</p>
+                    </div>
+                </div>
+
+                <div class="profile-actions" style="margin-top: 20px;">
+                    <a href="/" class="button-link">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('partials/footer')%>
+</body>
+</html>

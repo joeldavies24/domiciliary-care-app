@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopefield Homecare</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('partials/navbar', { user: user }) %>
+    <div class="grid">
+        <div class="content_section">
+            <div class="profile-card">
+                <h2>Submit Request</h2>
+                <form action="/user/request" method="POST" class="standard-form">
+                    
+                    <div class="form-group">
+                        <label for="requestType">Category:</label>
+                        <select name="requestType" id="requestType" required>
+                            <option value="Timetable Conflict">Timetable Conflict</option>
+                            <option value="Clock-in Error">Clock-in Error</option>
+                            <option value="Client Issue">Client Issue</option>
+                            <option value="Personal Detail Change">Personal Detail Change</option>
+                            <option value="General Complaint">General Complaint</option>
+                            <option value="System Bug">System Bug</option>
+                            <option value="Inquiry">Inquiry</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="otherInputContainer" style="display: none;">
+                        <label for="otherDetails">Please specify category:</label>
+                        <input type="text" name="otherDetails" id="otherDetails" class="standard-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="details">Details:</label>
+                        <textarea name="details" id="details" rows="5" required></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="button-link">Complete</button>
+                        <a href="/user/index" class="cancel-link">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const requestTypeSelect = document.getElementById('requestType');
+        const otherContainer = document.getElementById('otherInputContainer');
+        const otherInput = document.getElementById('otherDetails');
+
+        requestTypeSelect.addEventListener('change', function() {
+            if (this.value === 'Other') {
+                otherContainer.style.display = 'block';
+                otherInput.required = true;
+            } else {
+                otherContainer.style.display = 'none';
+                otherInput.required = false;
+                otherInput.value = "";
+            }
+        });
+    </script>
+    <%- include('partials/footer')%>
+</body>
+</html>

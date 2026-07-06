@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopefield Homecare</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<%- include('../../partials/navbar', { user: user }) %>
+
+<div class="grid">
+    <div class="content_section">
+        <div class="profile-card">
+            <div class="page-header">
+                <div>
+                    <h2 style="margin-bottom:5px;">
+                        Create New Care Plan
+                    </h2>
+                    <small class="text-muted">
+                        Create and manage a complete care profile
+                    </small>
+                </div>
+            </div>
+
+            <form action="/admin/create/careplan" method="POST" class="standard-form">
+                <input type="hidden" name="clientId" value="<%= clientId %>">
+                <div class="section-card">
+                    <h4>
+                        Medical Overview
+                    </h4>
+                    <div class="form-group">
+                        <label>
+                            Allergies
+                        </label>
+                        <input type="text"
+                               name="allergies">
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            Dietary Requirements
+                        </label>
+                        <input type="text" name="dietaryRequirements">
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            Mobility Restrictions
+                        </label>
+                        <textarea name="mobilityRestrictions"rows="3"></textarea>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <div class="entry-header">
+                        <h4 style="margin:0;">
+                            Medical History
+                        </h4>
+                        <button type="button" onclick="addHistory()" class="add-btn">
+                            Add
+                        </button>
+                    </div>
+                    <div id="history-container" class="dynamic-list">
+                    </div>
+                </div>
+                <div class="section-card">
+                    <div class="entry-header">
+                        <h4 style="margin:0;">
+                            Emergency Contacts
+                        </h4>
+                        <button type="button" onclick="addContact()" class="add-btn">
+                            Add Contact
+                        </button>
+                    </div>
+
+                    <div id="contact-container" class="dynamic-list">
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h4>
+                        Administrative Notes
+                    </h4>
+
+                    <div class="form-group">
+                        <label>
+                            Admin Notes
+                        </label>
+
+                        <textarea name="adminNotes" rows="5"></textarea>
+                    </div>
+                </div>
+
+                <div class="profile-actions" style="margin-top:25px;">
+                    <button type="submit" class="clock-btn-in">
+                        Save Care Plan
+                    </button>
+
+                    <a href="/admin/clients" class="nav-btn" style="background:#666;">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+
+function addContact(){
+
+    const container = document.getElementById('contact-container');
+
+    const div = document.createElement('div');
+
+    div.className = 'entry-card';
+
+    div.innerHTML = `
+        <div class="entry-header">
+            <span class="entry-title">
+                Emergency Contact
+            </span>
+            <button type="button" class="remove-btn" onclick="removeEntry(this)">
+                Remove
+            </button>
+        </div>
+        <div class="input-grid">
+            <div class="form-group">
+                <label>
+                    Full Name
+                </label>
+                <input type="text" name="contactName[]">
+            </div>
+            <div class="form-group">
+                <label>
+                    Relationship
+                </label>
+
+                <input type="text" name="contactRelation[]">
+            </div>
+
+            <div class="form-group input-full">
+                <label>
+                    Mobile Number
+                </label>
+                <input type="text" name="contactMobile[]">
+            </div>
+        </div>
+    `;
+    container.appendChild(div);
+}
+
+function addHistory(){
+    const container = document.getElementById('history-container');
+    const div = document.createElement('div');
+    div.className = 'entry-card';
+    div.innerHTML = `
+        <div class="entry-header">
+            <span class="entry-title">
+                Medical History Entry
+            </span>
+
+            <button type="button" class="remove-btn" onclick="removeEntry(this)">
+                Remove
+            </button>
+        </div>
+
+        <div class="form-group">
+            <label>
+                Medical Condition
+            </label>
+            <input type="text"
+                   name="condition[]">
+        </div>
+
+        <div class="form-group">
+            <label>
+                Notes
+            </label>
+            <textarea name="historyNotes[]" rows="4"></textarea>
+        </div>
+    `;
+    container.appendChild(div);
+}
+
+function removeEntry(button){
+    button.closest('.entry-card').remove();
+}
+
+window.onload = function(){
+    addContact();
+    addHistory();
+};
+
+</script>
+<%- include('../../partials/footer') %>
+
+</body>
+</html>

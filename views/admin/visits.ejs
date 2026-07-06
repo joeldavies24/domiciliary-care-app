@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopefield Homecare</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('partials/navbar', { user: user }) %>
+    <div class="grid">
+        <div class="content_section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Visit List</h2>
+                <a href="/admin/create/visit" class="button-link">Schedule New Visit</a>
+            </div>
+            <input type="text" id="visitSearch" class="search-input" placeholder="Search by client, carer, or date...">
+            <div class="table-scroll">
+                <table class="timetable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Client</th>
+                            <th>Carer(s)</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="visitTableBody">
+                        <% visits.forEach(function(visit) {
+                            const client = visit.clientId;
+                            const clientName = client ? `${client.userForename} ${client.userSurname}` : 'Unknown';
+                            const carerNames = visit.carerId.map(c => c ? `${c.userForename} ${c.userSurname}` : 'Unknown').join(', ');
+                            const isComplete = visit.checkOut != null;
+                            const isActive = visit.checkIn != null && !isComplete;
+                            const searchText = `${clientName} ${carerNames} ${visit.date}`.toLowerCase();
+                        %>
+                            <tr data-search="<%= searchText %>">
+                                <td><%= new Date(visit.date).toLocaleDateString('en-GB') %></td>
+                                <td><%= visit.scheduledStart %> – <%= visit.scheduledEnd %></td>
+                                <td>
+                                    <a href="/user/details/<%= client?._id %>" class="view-link" style="font-weight: bold;">
+                                        <%= clientName %>
+                                    </a>
+                                </td>
+                                <td><%= carerNames %></td>
+                                <td>
+                                    <% if (isComplete) { %>
+                                        <span class="status-badge">Complete</span>
+                                    <% } else if (isActive) { %>
+                                        <span class="status-badge">In Progress</span>
+                                    <% } else { %>
+                                        <span class="status-badge">Scheduled</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <div style="display:flex;gap:10px;align-items:center;">
+                                        <a href="/admin/visit/<%= visit._id %>" class="text-link">
+                                            View
+                                        </a>
+                                        <a href="/admin/edit_visit/<%= visit._id %>" class="text-link" style="color:#3498db;">
+                                            Edit
+                                        </a>
+
+                                        <form action="/admin/delete_visit/<%= visit._id %>" method="POST" onsubmit="return confirm('Delete this visit?');" style="display:contents;">
+                                            <button type="submit" class="text-link btn-delete">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div>
+            <a class="nav-btn" href="/admin/index">Back to Admin Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('visitSearch').addEventListener('input', function () {
+            const filter = this.value.toLowerCase();
+            document.querySelectorAll('#visitTableBody tr').forEach(row => {
+                row.style.display = row.dataset.search.includes(filter) ? '' : 'none';
+            });
+        });
+    </script>
+
+    <%- include('partials/footer') %>
+</body>
+</html>

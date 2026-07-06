@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopefield Homecare</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('../../partials/navbar', { user: user }) %>
+    <div class="grid">
+        <div class="content_section">
+            <div class="profile-card">
+                <h2>Create New Care Routine</h2>
+                <hr>
+                <form action="/admin/create/routine" method="POST" class="standard-form">
+                    
+                    <div class="form-group">
+                        <label for="routineName">Routine Name:</label>
+                        <input type="text" id="routineName" name="routineName" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Assign to Client:</label>
+                        <div class="search-container">
+                            <input type="text" id="clientSearch" class="search-input" placeholder="Type to search clients..." autocomplete="off">
+                            <div id="clientDropdown" class="selection-list">
+                                <% clients.forEach(client => { %>
+                                    <div class="client-option" data-id="<%= client._id %>" data-name="<%= client.userForename %> <%= client.userSurname %>">
+                                        <%= client.userForename %> <%= client.userSurname %>
+                                    </div>
+                                <% }) %>
+                            </div>
+                            <div id="selectedClientBadge" class="selected-badge">
+                                Selected: <span id="clientDisplayName"></span>
+                            </div>
+                        </div>
+                        <input type="hidden" name="clientId" id="realClientId" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Select Tasks for Routine:</label>
+                        <input type="text" id="taskSearch" class="search-input" placeholder="Search tasks by name or category...">
+                        <div class="task-checklist" id="taskList">
+                            <% tasks.forEach(task => { %>
+                                <div class="checkbox-item" data-text="<%= task.taskName.toLowerCase() %> <%= task.category.toLowerCase() %>">
+                                    <input type="checkbox" name="tasks" value="<%= task._id %>" id="task_<%= task._id %>" class="task-checkbox">
+                                    <label for="task_<%= task._id %>">
+                                        <strong><%= task.taskName %></strong> 
+                                        <small style="color: #888;">(<%= task.category %>)</small>
+                                    </label>
+                                </div>
+                            <% }) %>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Routine Description:</label>
+                        <textarea id="description" name="description" rows="4" placeholder="Brief description..."></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="button-link">Save Routine</button>
+                        <a href="/admin/create" class="cancel-link">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const clientSearch = document.getElementById('clientSearch');
+        const clientDropdown = document.getElementById('clientDropdown');
+        const clientOptions = document.querySelectorAll('.client-option');
+        const realClientId = document.getElementById('realClientId');
+        const selectedBadge = document.getElementById('selectedClientBadge');
+        const clientDisplayName = document.getElementById('clientDisplayName');
+
+        clientSearch.addEventListener('input', function() {
+            const filter = this.value.toLowerCase();
+            let hasResults = false;
+
+            clientOptions.forEach(opt => {
+                const name = opt.dataset.name.toLowerCase();
+                if (name.includes(filter)) {
+                    opt.style.display = 'block';
+                    hasResults = true;
+                } else {
+                    opt.style.display = 'none';
+                }
+            });
+
+            clientDropdown.style.display = (filter && hasResults) ? 'block' : 'none';
+        });
+
+        clientOptions.forEach(opt => {
+            opt.addEventListener('click', function() {
+                const id = this.dataset.id;
+                const name = this.dataset.name;
+
+                clientSearch.value = name;
+                realClientId.value = id;
+                
+                clientDisplayName.innerText = name;
+                selectedBadge.style.display = 'block';
+                clientDropdown.style.display = 'none';
+                
+                clientSearch.style.borderColor = '#28a745'; 
+            });
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!clientSearch.contains(e.target) && !clientDropdown.contains(e.target)) {
+                clientDropdown.style.display = 'none';
+            }
+        });
+
+        const taskSearch = document.getElementById('taskSearch');
+        taskSearch.addEventListener('keyup', function() {
+            const filter = this.value.toLowerCase();
+            const items = document.querySelectorAll('#taskList .checkbox-item');
+            
+            items.forEach(item => {
+                const text = item.getAttribute('data-text').toLowerCase();
+                item.style.display = text.includes(filter) ? "flex" : "none";
+            });
+        });
+    </script>
+    <%- include('../../partials/footer') %>
+</body>
+</html>

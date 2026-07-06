@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopefield Homecare</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<%- include('../partials/navbar', { user: user }) %>
+
+<div class="grid">
+    <div class="content_section">
+        <div class="profile-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <h2>Edit Care Plan</h2>
+                <span class="badge badge-gray">
+                    <%= carePlan.clientId.userForename %>
+                    <%= carePlan.clientId.userSurname %>
+                </span>
+            </div>
+            <hr>
+            <form action="/careplan/edit/<%= carePlan._id %>" method="POST">
+                <div class="section-box">
+                    <label><strong>Allergies</strong></label>
+                    <input type="text" name="allergies" value="<%= carePlan.allergies.join(', ') %>" style="width:100%;padding:10px;margin-top:10px;">
+                </div>
+                <div class="section-box">
+                    <label><strong>Dietary Requirements</strong></label>
+                    <input type="text" name="dietaryRequirements" value="<%= carePlan.dietaryRequirements.join(', ') %>" style="width:100%;padding:10px;margin-top:10px;">
+                </div>
+                <div class="section-box">
+                    <label><strong>Mobility Restrictions</strong></label>
+                    <textarea name="mobilityRestrictions" rows="4" style="width:100%;padding:10px;margin-top:10px;"><%= carePlan.mobilityRestrictions || '' %></textarea>
+                </div>
+                <div class="section-box">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <h3>Medical History</h3>
+                        <button type="button" onclick="addMedicalHistory()" class="add-btn">
+                            Add History
+                        </button>
+                    </div>
+                    <div id="history-container">
+                        <% if(carePlan.medicalHistory.length > 0){ %>
+                            <% carePlan.medicalHistory.forEach(function(item){ %>
+                                <div class="history-entry">
+                                    <input type="text" name="condition[]" value="<%= item.condition %>" placeholder="Condition">
+                                    <textarea name="historyNotes[]" rows="3" placeholder="Notes"><%= item.notes %></textarea>
+                                    <button type="button" class="remove-btn" onclick="removeEntry(this)">Remove</button>
+                                </div>
+                            <% }) %>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="section-box">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <h3>Emergency Contacts</h3>
+                        <button type="button" onclick="addContact()" class="add-btn">
+                            Add 
+                        </button>
+                    </div>
+                    <div id="contact-container">
+                        <% if(carePlan.emergencyContacts.length > 0){ %>
+                            <% carePlan.emergencyContacts.forEach(function(contact){ %>
+                                <div class="contact-entry">
+                                    <input type="text" name="contactName[]" value="<%= contact.name %>" placeholder="Contact Name">
+                                    <input type="text" name="contactRelation[]" value="<%= contact.relation %>" placeholder="Relation">
+                                    <input type="text" name="contactMobile[]" value="<%= contact.mobile %>" placeholder="Mobile Number">
+                                    <button type="button" class="remove-btn" onclick="removeEntry(this)"> Remove </button>
+                                </div>
+                            <% }) %>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="section-box">
+                    <label><strong>Admin Notes</strong></label>
+                    <textarea name="adminNotes" rows="5" style="width:100%;padding:10px;margin-top:10px;">
+                        <%= carePlan.adminNotes || '' %>
+                    </textarea>
+                </div>
+                <div style="display:flex;gap:15px;">
+                    <button type="submit" class="button-link" style="border:none;">
+                        Save Changes
+                    </button>
+                    <a href="/user/careplan/details/<%= carePlan._id %>" class="button-link">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+
+function addContact(){
+    const container = document.getElementById('contact-container');
+    const div = document.createElement('div');
+    div.className = 'contact-entry';
+    div.innerHTML = `
+        <input type="text" name="contactName[]" placeholder="Contact Name">
+        <input type="text" name="contactRelation[]" placeholder="Relation">
+        <input type="text" name="contactMobile[]" placeholder="Mobile Number">
+        <button type="button" class="remove-btn" onclick="removeEntry(this)">
+            Remove
+        </button>
+    `;
+    container.appendChild(div);
+    }
+
+function addMedicalHistory(){
+    const container = document.getElementById('history-container');
+    const div = document.createElement('div');
+    div.className = 'history-entry';
+    div.innerHTML = `
+        <input type="text" name="condition[]" placeholder="Condition">
+        <textarea name="historyNotes[]" rows="3" placeholder="Notes"></textarea>
+        <button type="button" class="remove-btn" onclick="removeEntry(this)">
+            Remove
+        </button>
+    `;
+    container.appendChild(div);
+}
+
+function removeEntry(button){
+    button.parentElement.remove();
+}
+
+</script>
+
+<%- include('../partials/footer') %>
+
+</body>
+</html>

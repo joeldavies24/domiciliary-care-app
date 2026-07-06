@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopefield Homecare</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('../partials/navbar', { user: user }) %>
+
+    <div class="grid">
+        <div class="content_section">
+            <div class="profile-card">
+                <h2><%= routine.routineName %></h2>
+                <hr>
+
+                <div class="form-group">
+                    <label>Client</label>
+                    <p>
+                        <a href="/user/details/<%= routine.clientId?._id %>" class="view-link">
+                            <%= routine.clientId ? routine.clientId.userForename + ' ' + routine.clientId.userSurname : 'Unknown' %>
+                        </a>
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <p><%= routine.description || '—' %></p>
+                </div>
+
+                <div class="form-group">
+                    <label>Tasks</label>
+
+                    <% if (routine.tasks.length === 0) { %>
+                        <p>No tasks assigned.</p>
+                    <% } else { %>
+                        <div class="task-checklist">
+                            <% routine.tasks.forEach(task => { %>
+                                <div class="checkbox-item">
+                                    <strong><%= task.taskName %></strong>
+                                    <small style="margin-left:8px;">(<%= task.category %>)</small>
+                                </div>
+                            <% }) %>
+                        </div>
+                    <% } %>
+                </div>
+
+                <div class="form-actions">
+                    <a href="/admin/edit_routine/<%= routine._id %>" class="button-link">
+                        Edit Routine
+                    </a>
+
+                    <a href="/admin/routines" class="cancel-link">
+                        Back to Routines
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <%- include('../partials/footer') %>
+</body>
+</html>

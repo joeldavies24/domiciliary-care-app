@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopefield Homecare</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('partials/navbar', { user: user }) %>
+    
+    <div class="grid">
+        <div class="dashboard-container">
+            <div class="button-grid">
+                <a href="/user/profile" class="square-btn">
+                    <img src="/images/profile.png">
+                </a>
+                <a href="/user/request" class="square-btn">
+                    <img src="/images/request.png">
+                </a>
+                <a href="/user/timetable" class="square-btn">
+                    <img src="/images/timetable.png">
+                </a>
+                <% if (user.userType === 'admin') { %>
+                    <a href="/admin/index" class="square-btn">
+                        <img src="/images/admin.png">
+                    </a>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <%- include('partials/footer')%>
+</body>
+</html>

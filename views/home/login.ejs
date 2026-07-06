@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopefield Homecare</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="navbar-header" style="display: flex; justify-content: space-between; align-items: center; padding: 0 20px; height: 60px; position: sticky; top: 0; z-index: 1000;">
+        <div style="color: white; font-weight: bold; font-size: 1.2rem;">Hopefield Homecare</div>
+        
+        <nav>
+            <ul class="btn-group_horizontal" style="background: none; margin: 0;">
+                <li><a href="/home/about">About Us</a></li>
+                <li><a href="/home/contact">Contact</a></li>
+                <li><a href="/">Home</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <section class="main-display">
+        <div class="main-left">
+            <h1>Hopefield Homecare</h1>
+            <img src="/images/logo.png" style="height: 400px; width: 400px;">
+            <p style="margin-top: 20px; font-style: italic;">
+                "Giving care to those that need it"
+            </p>
+        </div>
+
+        <div class="main-right">
+            <div class="profile-card" style="width: 100%; max-width: 500px;">
+                <form action="/home/login" method="POST">
+                    
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" placeholder="Enter username..." required />
+                    
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" placeholder="Enter password..." required />
+                    
+                    <input type="submit" value="Login" />
+
+                </form>
+
+            </div>
+        </div>
+
+    </section>
+
+    <%- include('partials/footer')%>
+</body>
+</html>

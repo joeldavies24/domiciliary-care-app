@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopefield Homecare</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('../partials/navbar', { user: user }) %>
+
+    <div class="grid">
+        <div class="content_section">
+            <div class="profile-card">
+                <h2>Edit Visit</h2>
+                <hr>
+
+                <form action="/admin/edit_visit/<%= visit._id %>" method="POST">
+
+                    <div class="form-group">
+                        <label>Assign Carer(s):</label>
+                        <div class="search-container">
+                            <input type="text" id="carerSearch" class="search-input" placeholder="Search carers..." autocomplete="off">
+                            <div id="carerDropdown" class="selection-list">
+                                <% carers.forEach(carer => { %>
+                                    <div class="dropdown-option" data-id="<%= carer._id %>" data-name="<%= carer.userForename %> <%= carer.userSurname %>">
+                                        <%= carer.userForename %> <%= carer.userSurname %>
+                                    </div>
+                                <% }) %>
+                            </div>
+                        </div>
+                        <div class="selected-container" id="selectedCarersTags"></div>
+                        <select name="carerId[]" id="realCarerSelect" multiple class="hidden-select"></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Assign to Client:</label>
+                        <div class="search-container">
+                            <input type="text" id="clientSearch" class="search-input" placeholder="Search clients..." autocomplete="off">
+                            <div id="clientDropdown" class="selection-list">
+                                <% clients.forEach(client => { %>
+                                    <div class="dropdown-option" data-id="<%= client._id %>" data-name="<%= client.userForename %> <%= client.userSurname %>">
+                                        <%= client.userForename %> <%= client.userSurname %>
+                                    </div>
+                                <% }) %>
+                            </div>
+                            <div id="selectedClientBadge" class="selected-badge" <%= visit.clientId ? '' : 'style="display:none;"' %>>
+                                Selected: <span id="clientDisplayName"><%= visit.clientId ? visit.clientId.userForename + ' ' + visit.clientId.userSurname : '' %></span>
+                            </div>
+                        </div>
+                        <input type="hidden" name="clientId" id="realClientId" value="<%= visit.clientId ? visit.clientId._id : '' %>" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Select Tasks:</label>
+                        <input type="text" id="taskSearchInput" class="search-input" placeholder="Search tasks...">
+                        <div class="task-checklist" id="taskList">
+                            <% tasks.forEach(task => { 
+                                const isChecked = visit.tasks.some(vt => vt.task && vt.task.toString() === task._id.toString());
+                            %>
+                                <div class="checkbox-item" data-text="<%= task.taskName.toLowerCase() %> <%= task.category.toLowerCase() %>">
+                                    <input type="checkbox" name="selectedTasks" value="<%= task._id %>" id="task_<%= task._id %>" <%= isChecked ? 'checked' : '' %>>
+                                    <label for="task_<%= task._id %>">
+                                        <strong><%= task.taskName %></strong> <small>(<%= task.category %>)</small>
+                                    </label>
+                                </div>
+                            <% }) %>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Date:</label>
+                        <% const dateVal = visit.date ? new Date(visit.date).toISOString().split('T')[0] : ''; %>
+                        <input type="date" name="date" value="<%= dateVal %>" required />
+                    </div>
+
+                    <div style="display: flex; gap: 10px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label>Start:</label>
+                            <input type="time" name="scheduledStart" value="<%= visit.scheduledStart %>" required />
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>End:</label>
+                            <input type="time" name="scheduledEnd" value="<%= visit.scheduledEnd %>" required />
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="button-link">Save Changes</button>
+                        <a href="/admin/visits" class="cancel-link">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const existingCarers = JSON.parse('<%- JSON.stringify(visit.carerId.map(c => ({ id: c._id, name: c.userForename + " " + c.userSurname }))) %>');
+        const existingClient = JSON.parse('<%- JSON.stringify(visit.clientId ? { id: visit.clientId._id, name: visit.clientId.userForename + " " + visit.clientId.userSurname } : null) %>');
+
+        const tagContainer = document.getElementById('selectedCarersTags');
+        const realSelect = document.getElementById('realCarerSelect');
+
+        function addCarerTag(id, name) {
+            if (document.querySelector(`.tag[data-id="${id}"]`)) return;
+            const tag = document.createElement('div');
+            tag.className = 'tag';
+            tag.dataset.id = id;
+            tag.innerHTML = `${name} <span class="remove-btn">&times;</span>`;
+            tag.querySelector('.remove-btn').onclick = () => {
+                tag.remove();
+                const opt = realSelect.querySelector(`option[value="${id}"]`);
+                if (opt) opt.remove();
+            };
+            tagContainer.appendChild(tag);
+            const option = document.createElement('option');
+            option.value = id;
+            option.selected = true;
+            realSelect.appendChild(option);
+        }
+
+        existingCarers.forEach(c => addCarerTag(c.id, c.name));
+
+        if (existingClient) {
+            document.getElementById('realClientId').value = existingClient.id;
+            document.getElementById('clientSearch').value = existingClient.name;
+            document.getElementById('clientDisplayName').innerText = existingClient.name;
+            document.getElementById('selectedClientBadge').style.display = 'block';
+        }
+
+        function initDropdown(searchId, dropdownId, onSelect, isMulti) {
+            const search = document.getElementById(searchId);
+            const dropdown = document.getElementById(dropdownId);
+
+            search.addEventListener('input', function() {
+                const filter = this.value.toLowerCase();
+                let matchCount = 0;
+                dropdown.querySelectorAll('.dropdown-option').forEach(opt => {
+                    const match = opt.dataset.name.toLowerCase().includes(filter);
+                    opt.style.display = match ? 'block' : 'none';
+                    if (match) matchCount++;
+                });
+                dropdown.style.display = (filter && matchCount > 0) ? 'block' : 'none';
+            });
+
+            dropdown.addEventListener('click', e => {
+                const opt = e.target.closest('.dropdown-option');
+                if (opt) {
+                    onSelect(opt.dataset.id, opt.dataset.name);
+                    if (isMulti) search.value = '';
+                    else search.value = opt.dataset.name;
+                    dropdown.style.display = 'none';
+                }
+            });
+        }
+
+        initDropdown('carerSearch', 'carerDropdown', addCarerTag, true);
+        initDropdown('clientSearch', 'clientDropdown', (id, name) => {
+            document.getElementById('realClientId').value = id;
+            document.getElementById('clientDisplayName').innerText = name;
+            document.getElementById('selectedClientBadge').style.display = 'block';
+        }, false);
+
+        document.getElementById('taskSearchInput').addEventListener('input', function() {
+            const filter = this.value.toLowerCase();
+            document.querySelectorAll('#taskList .checkbox-item').forEach(item => {
+                item.style.display = item.dataset.text.includes(filter) ? 'flex' : 'none';
+            });
+        });
+
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.search-container')) {
+                document.querySelectorAll('.selection-list').forEach(d => d.style.display = 'none');
+            }
+        });
+    </script>
+
+    <%- include('../partials/footer') %>
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopefield Homecare</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('../../partials/navbar', { user: user }) %>
+    <div class="grid">
+        <div class="content_section">
+            <div class="profile-card">
+                <h2>Register New User</h2>
+                <form id="registrationForm" action="/admin/create/user" method="post" class="standard-form">
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label for="userForename">Forename:</label>
+                            <input id="userForename" name="userForename" type="text" required />
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label for="userSurname">Surname:</label>
+                            <input id="userSurname" name="userSurname" type="text" required />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="username">Username:</label>
+                        <input id="username" name="username" type="text" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <div class="password-container">
+                            <input id="password" name="password" type="password" required />
+                            <button type="button" id="togglePass" class="toggle-password">Show</button>
+                        </div>
+                        <div class="meter-container">
+                            <div id="power-point"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="userType">Account Role:</label>
+                        <select name="userType" id="userType" required>
+                            <option value="client" selected>Client</option>
+                            <option value="carer">Carer</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+
+                    <div id="clientFields">
+                        <div class="form-group">
+                            <label for="nhsNumber">NHS Number:</label>
+                            <input id="nhsNumber" name="nhsNumber" type="text"/>
+                        </div>
+
+                        <h3 style="margin-top: 20px; font-size: 1.1rem; border-bottom: 1px solid #ddd;">
+                            Client Address
+                        </h3>
+                        
+                        <div class="form-group">
+                            <label for="street">Street Address:</label>
+                            <input id="street" name="userAddress[street]" type="text" class="address-input"/>
+                        </div>
+
+                        <div style="display: flex; gap: 10px;">
+                            <div class="form-group" style="flex: 1;">
+                                <label for="town">Town/City:</label>
+                                <input id="town" name="userAddress[town]" type="text" class="address-input" />
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label for="postcode">Postcode:</label>
+                                <input id="postcode" name="userAddress[postcode]" type="text" class="address-input" />
+                            </div>
+                        </div>
+
+                        <button type="button" id="verify-btn">Verify Address Location</button>
+
+                        <div id="geo-notice" class="geo-status"></div>
+
+                        <a id="map-verify-link" target="_blank">
+                            View location on Google Maps
+                        </a>
+
+                        <input type="hidden" id="lat" name="userAddress[coordinates][latitude]">
+                        <input type="hidden" id="lng" name="userAddress[coordinates][longitude]">
+                    </div>
+
+                    <div class="form-group" id="adminSecretField" style="display: none;">
+                        <label for="adminSecret">Admin Code:</label>
+                        <input id="adminSecret" name="adminSecret" type="password"/>
+                    </div>
+
+                    <div class="form-actions" style="margin-top: 30px;">
+                        <button type="submit" id="submitBtn" class="button-link">
+                            Create Account
+                        </button>
+                        <a href="/admin/index" class="cancel-link">Cancel</a>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const registrationForm = document.getElementById("registrationForm");
+        const userTypeSelect = document.getElementById('userType');
+        const addressInputs = document.querySelectorAll('.address-input');
+        const geoNotice = document.getElementById('geo-notice');
+        const mapLink = document.getElementById('map-verify-link');
+        const verifyBtn = document.getElementById('verify-btn');
+        const passwordInput = document.getElementById('password');
+        const togglePassBtn = document.getElementById('togglePass');
+        const powerPoint = document.getElementById('power-point');
+
+        function capitaliseName(str) {
+            return str.trim().replace(/\b\w/g, c => c.toUpperCase());
+        }
+
+        togglePassBtn.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            togglePassBtn.textContent = type === 'password' ? 'Show' : 'Hide';
+        });
+
+        // GeeksforGeeks (2023) Create a Password Strength Checker using HTML CSS and JavaScript, GeeksforGeeks. Available at: https://www.geeksforgeeks.org/javascript/create-a-password-strength-checker-using-html-css-and-javascript/.
+        passwordInput.oninput = function() {
+            let point = 0;
+            let value = passwordInput.value;
+            if (value.length >= 6) {
+                let arrayTest = [/[0-9]/, /[a-z]/, /[A-Z]/, /[^0-9a-zA-Z]/];
+                arrayTest.forEach((item) => {
+                    if (item.test(value)) point++;
+                });
+            }
+            let width = ["0%", "25%", "50%", "75%", "100%"];
+            let color = ["#ddd", "#ff4d4d", "#ffad33", "#2eb82e", "#008000"];
+            powerPoint.style.width = width[point];
+            powerPoint.style.backgroundColor = color[point];
+        };
+
+        function toggleRoleFields() {
+            const role = userTypeSelect.value;
+            const clientFields = document.getElementById('clientFields');
+            const adminSecretField = document.getElementById('adminSecretField');
+            if (role === 'client') {
+                clientFields.style.display = 'block';
+                addressInputs.forEach(i => i.setAttribute('required', 'true'));
+            } else {
+                clientFields.style.display = 'none';
+                addressInputs.forEach(i => i.removeAttribute('required'));
+                document.getElementById('lat').value = "";
+                document.getElementById('lng').value = "";
+            }
+            adminSecretField.style.display = (role === 'admin') ? 'block' : 'none';
+        }
+
+        // CodingNepal (2023) Get Exact User Location using Javascript, Available at: https://youtube.com/shorts/J_hHYKu6rpo?si=gGS_ziVUenBp5nXe
+        async function geocodeAddress() {
+            const street = document.getElementById('street').value.trim();
+            const town = document.getElementById('town').value.trim();
+            const postcode = document.getElementById('postcode').value.trim();
+
+            if (!street || !postcode) {
+                geoNotice.style.color = "orange";
+                geoNotice.innerText = "Please enter street and postcode first.";
+                return false;
+            }
+
+            const query = `${street}, ${town}, ${postcode}`;
+            geoNotice.style.color = "blue";
+            geoNotice.innerText = "Searching...";
+
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+                const data = await response.json();
+
+                if (data && data.length > 0) {
+                    const lat = data[0].lat;
+                    const lon = data[0].lon;
+                    document.getElementById('lat').value = lat;
+                    document.getElementById('lng').value = lon;
+                    geoNotice.style.color = "green";
+                    geoNotice.innerText = "Location verified";
+                    mapLink.style.display = "inline-block";
+                    mapLink.href = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+                    return true;
+                } else {
+                    geoNotice.style.color = "red";
+                    geoNotice.innerText = "Location not found — check the address and try again.";
+                    mapLink.style.display = "none";
+                    return false;
+                }
+            } catch (err) {
+                geoNotice.style.color = "red";
+                geoNotice.innerText = "Geocoding service unavailable.";
+                return false;
+            }
+        }
+
+        addressInputs.forEach(input => {
+            input.addEventListener('input', () => {
+                document.getElementById('lat').value = "";
+                document.getElementById('lng').value = "";
+                geoNotice.style.color = "";
+                geoNotice.innerText = "";
+                mapLink.style.display = "none";
+            });
+        });
+
+        verifyBtn.addEventListener('click', geocodeAddress);
+        userTypeSelect.addEventListener('change', toggleRoleFields);
+
+        registrationForm.onsubmit = async function(e) {
+            e.preventDefault();
+
+            const forenameInput = document.getElementById('userForename');
+            const surnameInput = document.getElementById('userSurname');
+            forenameInput.value = capitaliseName(forenameInput.value);
+            surnameInput.value = capitaliseName(surnameInput.value);
+
+            if (userTypeSelect.value === 'client' && !document.getElementById('lat').value) {
+                const verified = await geocodeAddress();
+                if (!verified) {
+                    geoNotice.style.color = "red";
+                    geoNotice.innerText = "Address must be verified before submitting.";
+                    return;
+                }
+            }
+
+            registrationForm.submit();
+        };
+
+        window.onload = toggleRoleFields;
+    </script>
+
+    <%- include('../../partials/footer') %>
+</body>
+</html>

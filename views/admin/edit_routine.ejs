@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopefield Homecare</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('../partials/navbar', { user: user }) %>
+
+    <div class="grid">
+        <div class="content_section">
+            <div class="profile-card">
+                <h2>Edit Care Routine</h2>
+                <hr>
+
+                <form action="/admin/edit_routine/<%= routine._id %>" method="POST" class="standard-form">
+
+                    <div class="form-group">
+                        <label for="routineName">Routine Name:</label>
+                        <input type="text" id="routineName" name="routineName" value="<%= routine.routineName %>" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Assign to Client:</label>
+                        <div class="search-container">
+                            <input type="text" id="clientSearch" class="search-input" placeholder="Search clients..." value="<%= routine.clientId ? routine.clientId.userForename + ' ' + routine.clientId.userSurname : '' %>" autocomplete="off">
+
+                            <div id="clientDropdown" class="selection-list">
+                                <% clients.forEach(client => { %>
+                                    <div class="dropdown-option" data-id="<%= client._id %>" data-name="<%= client.userForename %> <%= client.userSurname %>">
+                                        <%= client.userForename %> <%= client.userSurname %>
+                                    </div>
+                                <% }) %>
+                            </div>
+
+                            <div id="selectedClientBadge" class="selected-badge" <%= routine.clientId ? '' : 'style="display:none;"' %>>
+                                Selected: 
+                                <span id="clientDisplayName">
+                                    <%= routine.clientId ? routine.clientId.userForename + ' ' + routine.clientId.userSurname : '' %>
+                                </span>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="clientId" id="realClientId" value="<%= routine.clientId ? routine.clientId._id : '' %>" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Select Tasks:</label>
+                        <input type="text" id="taskSearch" class="search-input" placeholder="Search tasks...">
+
+                        <div class="task-checklist" id="taskList">
+                            <% tasks.forEach(task => { 
+                                const isChecked = routine.tasks.some(t => t.toString() === task._id.toString());
+                            %>
+                                <div class="checkbox-item" data-text="<%= task.taskName.toLowerCase() %> <%= task.category.toLowerCase() %>">
+                                    <input type="checkbox" name="tasks" value="<%= task._id %>" id="task_<%= task._id %>" <%= isChecked ? 'checked' : '' %>>
+                                    <label for="task_<%= task._id %>">
+                                        <strong><%= task.taskName %></strong>
+                                        <small>(<%= task.category %>)</small>
+                                    </label>
+                                </div>
+                            <% }) %>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Routine Description:</label>
+                        <textarea id="description" name="description" rows="4"><%= routine.description %></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="button-link">Save Changes</button>
+                        <a href="/admin/routines" class="cancel-link">Cancel</a>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function initDropdown(searchId, dropdownId, onSelect) {
+            const search = document.getElementById(searchId);
+            const dropdown = document.getElementById(dropdownId);
+
+            search.addEventListener('input', function() {
+                const filter = this.value.toLowerCase();
+                let matchCount = 0;
+
+                dropdown.querySelectorAll('.dropdown-option').forEach(opt => {
+                    const match = opt.dataset.name.toLowerCase().includes(filter);
+                    opt.style.display = match ? 'block' : 'none';
+                    if (match) matchCount++;
+                });
+
+                dropdown.style.display = (filter && matchCount > 0) ? 'block' : 'none';
+            });
+
+            dropdown.addEventListener('click', e => {
+                const opt = e.target.closest('.dropdown-option');
+                if (opt) {
+                    onSelect(opt.dataset.id, opt.dataset.name);
+                    search.value = opt.dataset.name;
+                    dropdown.style.display = 'none';
+                }
+            });
+        }
+
+        initDropdown('clientSearch', 'clientDropdown', (id, name) => {
+            document.getElementById('realClientId').value = id;
+            document.getElementById('clientDisplayName').innerText = name;
+            document.getElementById('selectedClientBadge').style.display = 'block';
+        });
+
+        document.getElementById('taskSearch').addEventListener('input', function() {
+            const filter = this.value.toLowerCase();
+            document.querySelectorAll('#taskList .checkbox-item').forEach(item => {
+                item.style.display = item.dataset.text.includes(filter) ? 'flex' : 'none';
+            });
+        });
+
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.search-container')) {
+                document.querySelectorAll('.selection-list').forEach(d => d.style.display = 'none');
+            }
+        });
+    </script>
+
+    <%- include('../partials/footer') %>
+</body>
+</html>
